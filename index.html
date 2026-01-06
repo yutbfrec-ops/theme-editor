@@ -3,18 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="color-scheme" content="light" />
+  <meta name="color-scheme" content="light dark" />
   <title>Theme Token Editor (Single HTML) — v2</title>
   <style>
-    /* 工具防呆：避免瀏覽器/系統強制深色模式改到表單文字顏色 */
-:root{ color-scheme: light; }
-
-button, select, textarea, input,
-.btn, .select{
-  color: var(--text);
-  -webkit-text-fill-color: var(--text);
-}
-
     :root{
       /* ==== TOKENS (你未來只改這裡) ==== */
       --bg: #F6FAFF;
@@ -277,15 +268,15 @@ button, select, textarea, input,
       gap: 8px;
       flex-wrap: wrap;
     }
-/* FIX: 防止瀏覽器/系統「強制深色模式」改到表單元件，造成白字白底 */
+
+/* 工具防呆：避免瀏覽器/系統強制深色模式改到表單文字顏色 */
 :root{ color-scheme: light; }
 
 button, select, textarea, input,
 .btn, .select{
   color: var(--text);
-  -webkit-text-fill-color: var(--text); /* Android/Chrome 保險 */
+  -webkit-text-fill-color: var(--text);
 }
-
 
   </style>
 </head>
@@ -799,9 +790,111 @@ button, select, textarea, input,
         "--surface2": "rgba(255,255,255,0.70)",
         "--blur": "14px",
         "--border": "rgba(15,23,42,0.12)",
-        "--shadow": "rgba(15,23
+        "--shadow": "rgba(15,23,42,0.10)",
+        "--tintC": "rgba(59,130,246,0.14)",
+        "--tintD": "rgba(245,158,11,0.14)"
+      },
+      darkGlass: {
+        "--bg": "#0B1220",
+        "--bg2": "#0A1424",
+        "--surface": "rgba(15,23,42,0.55)",
+        "--surface2": "rgba(15,23,42,0.42)",
+        "--text": "#EAF2FF",
+        "--muted": "rgba(234,242,255,0.72)",
+        "--border": "rgba(234,242,255,0.10)",
+        "--shadow": "rgba(0,0,0,0.35)",
+        "--chip-bg": "rgba(15,23,42,0.45)",
+        "--chip-border": "rgba(234,242,255,0.10)",
+        "--btn-bg": "rgba(15,23,42,0.50)",
+        "--btn-border": "rgba(234,242,255,0.14)",
+        "--tintC": "rgba(59,130,246,0.16)",
+        "--tintD": "rgba(245,158,11,0.14)",
+        "--blur": "14px"
+      },
+      hiContrast: {
+        "--surface": "rgba(255,255,255,0.96)",
+        "--border": "rgba(15,23,42,0.16)",
+        "--shadow": "rgba(15,23,42,0.14)",
+        "--muted": "rgba(11,18,32,0.82)",
+        "--tintC": "rgba(59,130,246,0.10)",
+        "--tintD": "rgba(245,158,11,0.10)"
+      }
+    };
 
+    document.getElementById("presetSelect").addEventListener("change", (e)=>{
+      const key = e.target.value;
+      if(!key) return;
+      applyTokens(PRESETS[key]);
+      saveToLocal();
+      e.target.value = "";
+    });
 
+    // ---------- buttons ----------
+    document.getElementById("copyCss").addEventListener("click", async ()=>{
+      refreshOut();
+      try{
+        await navigator.clipboard.writeText(out.value);
+        alert("已複製到剪貼簿");
+      }catch(e){
+        out.select();
+        document.execCommand("copy");
+        alert("已複製（fallback）");
+      }
+    });
 
+    document.getElementById("saveLocal").addEventListener("click", ()=>{
+      saveToLocal();
+      alert("已保存（本機）");
+    });
 
+    document.getElementById("loadLocal").addEventListener("click", ()=>{
+      const ok = loadFromLocal();
+      alert(ok ? "已載入（本機）" : "尚無保存資料");
+    });
 
+    document.getElementById("exportJson").addEventListener("click", ()=>{
+      const payload = { updatedAt: new Date().toISOString(), tokens: readTokens() };
+      downloadFile("theme-tokens.json", JSON.stringify(payload, null, 2));
+    });
+
+    document.getElementById("importJson").addEventListener("click", ()=>{
+      const text = prompt("貼上 theme-tokens.json 內容（JSON）");
+      if(!text) return;
+      try{
+        const parsed = JSON.parse(text);
+        applyTokens(parsed.tokens || parsed);
+        saveToLocal();
+        alert("已匯入並保存");
+      }catch(e){
+        alert("JSON 格式錯誤");
+      }
+    });
+
+    document.getElementById("reset").addEventListener("click", ()=>{
+      if(!confirm("確定重置並清除本機記憶？")) return;
+      localStorage.removeItem(LS_KEY);
+      root.removeAttribute("style");
+      location.reload();
+    });
+
+    // ---------- autosave ----------
+    let _t = null;
+    function autosaveDebounced(){
+      clearTimeout(_t);
+      _t = setTimeout(()=>{
+        saveToLocal();
+      }, 250);
+    }
+    saveStatus.textContent = "Auto-save: ON";
+
+    // ---------- boot ----------
+    // 先輸出一次
+    refreshOut();
+
+    // 有本機記憶就載入（並同步 UI）
+    loadFromLocal();
+    syncUIFromVars();
+    refreshOut();
+  </script>
+</body>
+</html>
