@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="light dark" />
-  <title>Theme Token Editor (Single HTML)</title>
+  <title>Theme Token Editor (Single HTML) — v2</title>
   <style>
     :root{
       /* ==== TOKENS (你未來只改這裡) ==== */
@@ -36,7 +36,6 @@
       --tintD: rgba(245,158,11,.14);  /* 淡橘 tint */
     }
 
-    /* ==== Layout ==== */
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, "Noto Sans TC", "PingFang TC", sans-serif;
@@ -53,6 +52,10 @@
       box-sizing: border-box;
     }
 
+    @media (max-width: 980px){
+      .wrap{ grid-template-columns: 1fr; }
+    }
+
     .panel{
       border: 1px solid var(--border);
       background: var(--surface);
@@ -63,7 +66,7 @@
     }
 
     h1{ font-size: 18px; margin: 0 0 10px; }
-    .hint{ font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 12px; }
+    .hint{ font-size: 12px; color: var(--muted); line-height: 1.55; margin-bottom: 12px; }
 
     .row{
       display:grid;
@@ -85,6 +88,7 @@
       display:flex;
       gap: 8px;
       align-items: baseline;
+      flex-wrap: wrap;
     }
     code{
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
@@ -104,28 +108,44 @@
 
     .actions{
       display:flex;
+      flex-wrap: wrap;
       gap: 10px;
       margin-top: 12px;
     }
+
     .btn{
       border: 1px solid var(--btn-border);
       background: var(--btn-bg);
       border-radius: 14px;
       padding: 10px 12px;
       cursor: pointer;
-      font-weight: 600;
+      font-weight: 650;
       letter-spacing: .2px;
       transition: transform .08s ease;
+      white-space: nowrap;
     }
     .btn:active{ transform: translateY(1px); }
     .btn.primary{
       background: linear-gradient(135deg, rgba(37,99,235,.18), rgba(255,255,255,.75));
       border-color: rgba(37,99,235,.28);
     }
+    .btn.danger{
+      border-color: rgba(239,68,68,.35);
+      background: rgba(239,68,68,.08);
+    }
+
+    .select{
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-weight: 650;
+      color: var(--text);
+    }
 
     textarea{
       width: 100%;
-      height: 160px;
+      height: 190px;
       resize: vertical;
       border-radius: 14px;
       border: 1px solid var(--border);
@@ -153,7 +173,7 @@
       box-shadow: 0 18px 40px var(--shadow);
       padding: 20px;
     }
-    .hero h2{ margin:0; font-size: 40px; letter-spacing: -.5px; }
+    .hero h2{ margin:0; font-size: clamp(28px, 4vw, 40px); letter-spacing: -.5px; }
     .hero p{ margin: 10px 0 0; color: var(--muted); max-width: 760px; line-height: 1.7; }
 
     .chip{
@@ -179,6 +199,10 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 14px;
     }
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
     .card{
       border: 1px solid var(--border);
       border-radius: calc(var(--radius) + 6px);
@@ -206,11 +230,11 @@
     .card.theme-d::before{
       background: radial-gradient(600px 240px at 18% 18%, var(--tintD), rgba(255,255,255,0) 60%);
     }
-
     .card > *{ position: relative; z-index: 1; }
 
     .btnRow{
-      display:flex; gap: 10px; margin-top: 12px;
+      display:flex; flex-wrap: wrap;
+      gap: 10px; margin-top: 12px;
     }
     .cta{
       display:inline-flex;
@@ -234,37 +258,44 @@
     }
     .teach b{ color: var(--text); }
     .teach ul{ margin: 8px 0 0 18px; }
+
+    .status{
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      display:flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
   </style>
 </head>
+
 <body>
   <div class="wrap">
     <!-- Left: Controls -->
     <section class="panel">
       <h1>Theme / 顏色 Token 編輯器（單檔）</h1>
+
       <div class="hint">
         目標：加快調色。<br>
-        原則：專案所有顏色都用 <b>CSS 變數</b>，這裡調完按 <b>Copy CSS</b>，貼回你的 <code>:root</code> 或 <code>html[data-theme="light"]</code>。
+        原則：專案所有顏色都用 <b>CSS 變數</b>；調完按 <b>Copy CSS</b>，貼回你的 <code>:root</code> 或 <code>html[data-theme="light"]</code>。<br>
+        v2：自動記憶 / 匯入匯出 JSON / Presets / 輸出格式切換
       </div>
 
       <div class="row">
-        <label>
-          <div class="k"><b>背景 1</b> <code>--bg</code></div>
-        </label>
-        <input type="color" data-var="--bg" value="#F6FAFF">
+        <label><div class="k"><b>背景 1</b> <code>--bg</code></div></label>
+        <input type="color" id="bgColor" data-var="--bg" value="#F6FAFF">
       </div>
 
       <div class="row">
-        <label>
-          <div class="k"><b>背景 2</b> <code>--bg2</code></div>
-        </label>
-        <input type="color" data-var="--bg2" value="#EEF6FF">
+        <label><div class="k"><b>背景 2</b> <code>--bg2</code></div></label>
+        <input type="color" id="bg2Color" data-var="--bg2" value="#EEF6FF">
       </div>
 
       <div class="row">
-        <label>
-          <div class="k"><b>文字</b> <code>--text</code></div>
-        </label>
-        <input type="color" data-var="--text" value="#0B1220">
+        <label><div class="k"><b>文字</b> <code>--text</code></div></label>
+        <input type="color" id="textColor" data-var="--text" value="#0B1220">
       </div>
 
       <div class="row">
@@ -280,17 +311,13 @@
       </div>
 
       <div class="row">
-        <label>
-          <div class="k"><b>主色</b> <code>--primary</code></div>
-        </label>
-        <input type="color" data-var="--primary" value="#2563EB">
+        <label><div class="k"><b>主色</b> <code>--primary</code></div></label>
+        <input type="color" id="primaryColor" data-var="--primary" value="#2563EB">
       </div>
 
       <div class="row">
-        <label>
-          <div class="k"><b>輔色</b> <code>--accent</code></div>
-        </label>
-        <input type="color" data-var="--accent" value="#F59E0B">
+        <label><div class="k"><b>輔色</b> <code>--accent</code></div></label>
+        <input type="color" id="accentColor" data-var="--accent" value="#F59E0B">
       </div>
 
       <div class="row">
@@ -361,20 +388,55 @@
         <button class="btn" id="applyBlur">套用</button>
       </div>
 
+      <!-- Presets + Output Mode -->
+      <div class="row">
+        <label>
+          <div class="k"><b>Presets</b> <code>一鍵套用</code></div>
+          <div class="hint" style="margin:4px 0 0">用來快速切「乾淨淺色 / 玻璃淺色 / 深色」。</div>
+        </label>
+        <select class="select" id="presetSelect" title="preset">
+          <option value="">（選擇）</option>
+          <option value="cleanLight">Clean Light（乾淨淺色）</option>
+          <option value="glassLight">Glass Light（玻璃淺色）</option>
+          <option value="darkGlass">Dark Glass（深色玻璃）</option>
+          <option value="hiContrast">High Contrast（高對比）</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <label>
+          <div class="k"><b>輸出格式</b> <code>Copy CSS</code></div>
+          <div class="hint" style="margin:4px 0 0">`:root`（單主題）或 `light+dark`（雙主題模板）。</div>
+        </label>
+        <select class="select" id="exportMode">
+          <option value="root">:root { … }</option>
+          <option value="lightdark">html[data-theme="light"] + html[data-theme="dark"]</option>
+        </select>
+      </div>
+
       <div class="actions">
         <button class="btn primary" id="copyCss">Copy CSS</button>
-        <button class="btn" id="reset">Reset</button>
+        <button class="btn" id="saveLocal">Save</button>
+        <button class="btn" id="loadLocal">Load</button>
+        <button class="btn" id="exportJson">Export JSON</button>
+        <button class="btn" id="importJson">Import JSON</button>
+        <button class="btn danger" id="reset">Reset</button>
       </div>
 
       <textarea id="out" spellcheck="false" readonly></textarea>
+
+      <div class="status">
+        <span id="saveStatus">Auto-save: ON</span>
+        <span id="lastSaved"></span>
+      </div>
 
       <div class="teach" style="margin-top:10px">
         <b>教學：變數改哪裡？</b>
         <ul>
           <li><code>--bg/--bg2</code>：頁面大背景漸層</li>
           <li><code>--surface</code>：卡片/面板底（淺色「髒」常是這裡太灰或透明疊太多）</li>
-          <li><code>--tintC/--tintD</code>：卡片彩色漸層的「淡色染色」強度（建議 0.08~0.16）</li>
-          <li><code>--border/--shadow</code>：邊框/陰影灰霧感（淺色髒，通常是 alpha 太高）</li>
+          <li><code>--tintC/--tintD</code>：卡片彩色漸層淡染（建議 alpha 0.08~0.16）</li>
+          <li><code>--border/--shadow</code>：邊框/陰影灰霧感（淺色髒通常是 alpha 太高）</li>
         </ul>
       </div>
     </section>
@@ -417,10 +479,10 @@
         <div class="teach">
           <b>快速診斷「灰灰髒髒」：</b>
           <ul>
-            <li>把 <code>--shadow</code> alpha 降到 0.06~0.10</li>
-            <li>把 <code>--border</code> alpha 降到 0.08~0.12</li>
-            <li>把 <code>--tintAlpha</code>（tint）降到 0.08~0.16</li>
-            <li>把 <code>--surface</code> 透明度提高到 0.88~0.94（更白）</li>
+            <li><code>--shadow</code> alpha：0.06~0.10</li>
+            <li><code>--border</code> alpha：0.08~0.12</li>
+            <li>tint alpha：0.08~0.16</li>
+            <li><code>--surface</code>：0.88~0.94（更白更乾淨）</li>
           </ul>
         </div>
       </div>
@@ -429,9 +491,13 @@
 
   <script>
     const root = document.documentElement;
+    const LS_KEY = "themeEditor.tokens.v2";
+    const TOKEN_KEYS = ["--bg","--bg2","--surface","--surface2","--text","--muted","--primary","--accent","--border","--shadow","--chip-bg","--chip-border","--btn-bg","--btn-border","--radius","--blur","--tintC","--tintD"];
 
+    // ---------- helpers ----------
+    function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
     function hexToRgb(hex){
-      const h = hex.replace("#","").trim();
+      const h = (hex || "").replace("#","").trim();
       const full = h.length === 3 ? h.split("").map(x=>x+x).join("") : h;
       const n = parseInt(full, 16);
       return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
@@ -440,109 +506,278 @@
       const {r,g,b} = hexToRgb(hex);
       return `rgba(${r},${g},${b},${Number(a).toFixed(2)})`;
     }
+    function parseRGBA(str){
+      const m = String(str || "").match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)/i);
+      if(!m) return null;
+      return { r:+m[1], g:+m[2], b:+m[3], a: m[4]!==undefined ? +m[4] : 1 };
+    }
+    function rgbToHex(r,g,b){
+      const to = (n)=> clamp(Math.round(n),0,255).toString(16).padStart(2,"0");
+      return `#${to(r)}${to(g)}${to(b)}`.toUpperCase();
+    }
     function setVar(name, value){ root.style.setProperty(name, value); }
+    function getVar(name){
+      return getComputedStyle(root).getPropertyValue(name).trim();
+    }
 
-    // direct color inputs
+    // ---------- export textarea ----------
+    const out = document.getElementById("out");
+    function readTokens(){
+      const styles = getComputedStyle(root);
+      const obj = {};
+      TOKEN_KEYS.forEach(k => obj[k] = styles.getPropertyValue(k).trim());
+      return obj;
+    }
+    function buildCssBlock(selector, tokens){
+      const lines = TOKEN_KEYS.map(k => `  ${k}: ${tokens[k]};`);
+      return `${selector}{\n${lines.join("\n")}\n}`;
+    }
+    function refreshOut(){
+      const mode = document.getElementById("exportMode")?.value || "root";
+      const tokens = readTokens();
+
+      if(mode === "lightdark"){
+        // 產生「模板」：light 用目前值；dark 用一份可調的預設（你可再用匯入/Presets 產生 dark）
+        const dark = {
+          ...tokens,
+          "--bg": "#0B1220",
+          "--bg2": "#0A1424",
+          "--text": "#EAF2FF",
+          "--muted": "rgba(234,242,255,0.72)",
+          "--surface": "rgba(15,23,42,0.55)",
+          "--surface2": "rgba(15,23,42,0.42)",
+          "--border": "rgba(234,242,255,0.10)",
+          "--shadow": "rgba(0,0,0,0.35)",
+          "--chip-bg": "rgba(15,23,42,0.45)",
+          "--chip-border": "rgba(234,242,255,0.10)",
+          "--btn-bg": "rgba(15,23,42,0.50)",
+          "--btn-border": "rgba(234,242,255,0.14)",
+          "--tintC": "rgba(59,130,246,0.16)",
+          "--tintD": "rgba(245,158,11,0.14)"
+        };
+        out.value =
+          buildCssBlock('html[data-theme="light"]', tokens) + "\n\n" +
+          buildCssBlock('html[data-theme="dark"]', dark);
+      }else{
+        out.value = buildCssBlock(":root", tokens);
+      }
+    }
+
+    // ---------- UI sync (when load/import/preset) ----------
+    function syncUIFromVars(){
+      // simple color inputs
+      const mapColor = [
+        ["bgColor","--bg"],
+        ["bg2Color","--bg2"],
+        ["textColor","--text"],
+        ["primaryColor","--primary"],
+        ["accentColor","--accent"],
+      ];
+      mapColor.forEach(([id, key])=>{
+        const el = document.getElementById(id);
+        if(!el) return;
+        const v = getVar(key);
+        // assume hex; if not, skip
+        if(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v)) el.value = v;
+      });
+
+      // rgba sliders
+      const muted = parseRGBA(getVar("--muted"));
+      if(muted){
+        document.getElementById("mutedBase").value = rgbToHex(muted.r, muted.g, muted.b);
+        document.getElementById("mutedAlpha").value = String(clamp(muted.a,0,1));
+        document.getElementById("mutedLabel").textContent = Number(muted.a).toFixed(2);
+      }
+
+      const border = parseRGBA(getVar("--border"));
+      if(border){
+        document.getElementById("borderBase").value = rgbToHex(border.r, border.g, border.b);
+        document.getElementById("borderAlpha").value = String(clamp(border.a,0,1));
+        document.getElementById("borderLabel").textContent = Number(border.a).toFixed(2);
+      }
+
+      const shadow = parseRGBA(getVar("--shadow"));
+      if(shadow){
+        document.getElementById("shadowBase").value = rgbToHex(shadow.r, shadow.g, shadow.b);
+        document.getElementById("shadowAlpha").value = String(clamp(shadow.a,0,1));
+        document.getElementById("shadowLabel").textContent = Number(shadow.a).toFixed(2);
+      }
+
+      const surface = parseRGBA(getVar("--surface"));
+      if(surface){
+        document.getElementById("surfaceAlpha").value = String(clamp(surface.a,0.6,1));
+        document.getElementById("surfaceLabel").textContent = Number(surface.a).toFixed(2);
+      }
+
+      const tintC = parseRGBA(getVar("--tintC"));
+      if(tintC){
+        document.getElementById("tintAlpha").value = String(clamp(tintC.a,0.04,0.22));
+        document.getElementById("tintLabel").textContent = Number(tintC.a).toFixed(2);
+      }
+
+      const radius = getVar("--radius");
+      const r = parseFloat(radius);
+      if(!Number.isNaN(r)){
+        document.getElementById("radius hooking") // no-op
+      }
+      const radiusEl = document.getElementById("radius");
+      const radiusLabel = document.getElementById("radiusLabel");
+      if(radiusEl && radiusLabel){
+        const rv = clamp(parseFloat(getVar("--radius")) || 22, 12, 34);
+        radiusEl.value = String(rv);
+        radiusLabel.textContent = String(rv);
+      }
+
+      const blurEl = document.getElementById("blur");
+      const blurLabel = document.getElementById("blurLabel");
+      if(blurEl && blurLabel){
+        const bv = clamp(parseFloat(getVar("--blur")) || 10, 0, 18);
+        blurEl.value = String(bv);
+        blurLabel.textContent = String(bv);
+      }
+    }
+
+    // ---------- local storage ----------
+    const saveStatus = document.getElementById("saveStatus");
+    const lastSaved = document.getElementById("lastSaved");
+
+    function saveToLocal(){
+      const payload = { updatedAt: Date.now(), tokens: readTokens() };
+      localStorage.setItem(LS_KEY, JSON.stringify(payload));
+      const d = new Date(payload.updatedAt);
+      lastSaved.textContent = `Last saved: ${d.toLocaleString()}`;
+    }
+
+    function loadFromLocal(){
+      const raw = localStorage.getItem(LS_KEY);
+      if(!raw) return false;
+      try{
+        const parsed = JSON.parse(raw);
+        applyTokens(parsed.tokens);
+        const d = new Date(parsed.updatedAt || Date.now());
+        lastSaved.textContent = `Last saved: ${d.toLocaleString()}`;
+        return true;
+      }catch(e){
+        return false;
+      }
+    }
+
+    function applyTokens(tokens){
+      if(!tokens) return;
+      Object.entries(tokens).forEach(([k,v])=>{
+        if(TOKEN_KEYS.includes(k)) setVar(k, v);
+      });
+      refreshOut();
+      syncUIFromVars();
+    }
+
+    function downloadFile(name, text, type="application/json"){
+      const blob = new Blob([text], {type});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    // ---------- controls (original) ----------
     document.querySelectorAll('input[type="color"][data-var]').forEach(inp=>{
       inp.addEventListener('input', ()=>{
         setVar(inp.dataset.var, inp.value);
-        refreshOut();
+        refreshOut(); autosaveDebounced();
       });
     });
 
     // muted
     const mutedAlpha = document.getElementById("mutedAlpha");
     const mutedLabel = document.getElementById("mutedLabel");
-    mutedAlpha.addEventListener("input", ()=> mutedLabel.textContent = mutedAlpha.value);
+    mutedAlpha.addEventListener("input", ()=> { mutedLabel.textContent = Number(mutedAlpha.value).toFixed(2); autosaveDebounced(); });
     document.getElementById("applyMuted").addEventListener("click", ()=>{
       setVar("--muted", rgbaFrom(document.getElementById("mutedBase").value, mutedAlpha.value));
-      refreshOut();
+      refreshOut(); autosaveDebounced();
     });
 
     // border
     const borderAlpha = document.getElementById("borderAlpha");
     const borderLabel = document.getElementById("borderLabel");
-    borderAlpha.addEventListener("input", ()=> borderLabel.textContent = borderAlpha.value);
+    borderAlpha.addEventListener("input", ()=> { borderLabel.textContent = Number(borderAlpha.value).toFixed(2); autosaveDebounced(); });
     document.getElementById("applyBorder").addEventListener("click", ()=>{
       setVar("--border", rgbaFrom(document.getElementById("borderBase").value, borderAlpha.value));
-      refreshOut();
+      refreshOut(); autosaveDebounced();
     });
 
     // shadow
     const shadowAlpha = document.getElementById("shadowAlpha");
     const shadowLabel = document.getElementById("shadowLabel");
-    shadowAlpha.addEventListener("input", ()=> shadowLabel.textContent = shadowAlpha.value);
+    shadowAlpha.addEventListener("input", ()=> { shadowLabel.textContent = Number(shadowAlpha.value).toFixed(2); autosaveDebounced(); });
     document.getElementById("applyShadow").addEventListener("click", ()=>{
       setVar("--shadow", rgbaFrom(document.getElementById("shadowBase").value, shadowAlpha.value));
-      refreshOut();
+      refreshOut(); autosaveDebounced();
     });
 
     // surface
     const surfaceAlpha = document.getElementById("surfaceAlpha");
     const surfaceLabel = document.getElementById("surfaceLabel");
-    surfaceAlpha.addEventListener("input", ()=> surfaceLabel.textContent = surfaceAlpha.value);
+    surfaceAlpha.addEventListener("input", ()=> { surfaceLabel.textContent = Number(surfaceAlpha.value).toFixed(2); autosaveDebounced(); });
     document.getElementById("applySurface").addEventListener("click", ()=>{
       setVar("--surface", `rgba(255,255,255,${Number(surfaceAlpha.value).toFixed(2)})`);
       setVar("--surface2", `rgba(255,255,255,${Math.max(0.55, Number(surfaceAlpha.value)-0.14).toFixed(2)})`);
       setVar("--btn-bg", `rgba(255,255,255,${Math.max(0.62, Number(surfaceAlpha.value)-0.04).toFixed(2)})`);
-      refreshOut();
+      refreshOut(); autosaveDebounced();
     });
 
     // tint alpha
     const tintAlpha = document.getElementById("tintAlpha");
     const tintLabel = document.getElementById("tintLabel");
-    tintAlpha.addEventListener("input", ()=> tintLabel.textContent = tintAlpha.value);
+    tintAlpha.addEventListener("input", ()=> { tintLabel.textContent = Number(tintAlpha.value).toFixed(2); autosaveDebounced(); });
     document.getElementById("applyTint").addEventListener("click", ()=>{
       setVar("--tintC", rgbaFrom("#3B82F6", tintAlpha.value));
       setVar("--tintD", rgbaFrom("#F59E0B", tintAlpha.value));
-      refreshOut();
+      refreshOut(); autosaveDebounced();
     });
 
     // radius
     const radius = document.getElementById("radius");
     const radiusLabel = document.getElementById("radiusLabel");
-    radius.addEventListener("input", ()=> radiusLabel.textContent = radius.value);
+    radius.addEventListener("input", ()=> { radiusLabel.textContent = radius.value; autosaveDebounced(); });
     document.getElementById("applyRadius").addEventListener("click", ()=>{
       setVar("--radius", `${radius.value}px`);
-      refreshOut();
+      refreshOut(); autosaveDebounced();
     });
 
     // blur
     const blur = document.getElementById("blur");
     const blurLabel = document.getElementById("blurLabel");
-    blur.addEventListener("input", ()=> blurLabel.textContent = blur.value);
+    blur.addEventListener("input", ()=> { blurLabel.textContent = blur.value; autosaveDebounced(); });
     document.getElementById("applyBlur").addEventListener("click", ()=>{
       setVar("--blur", `${blur.value}px`);
-      refreshOut();
+      refreshOut(); autosaveDebounced();
     });
 
-    // export
-    const out = document.getElementById("out");
-    function refreshOut(){
-      const styles = getComputedStyle(root);
-      const keys = ["--bg","--bg2","--surface","--surface2","--text","--muted","--primary","--accent","--border","--shadow","--chip-bg","--chip-border","--btn-bg","--btn-border","--radius","--blur","--tintC","--tintD"];
-      const lines = keys.map(k=>`  ${k}: ${styles.getPropertyValue(k).trim()};`);
-      out.value = `:root{\n${lines.join("\n")}\n}`;
-    }
-    refreshOut();
+    // output mode change
+    document.getElementById("exportMode").addEventListener("change", refreshOut);
 
-    document.getElementById("copyCss").addEventListener("click", async ()=>{
-      refreshOut();
-      try{
-        await navigator.clipboard.writeText(out.value);
-        alert("已複製 CSS 到剪貼簿");
-      }catch(e){
-        out.select();
-        document.execCommand("copy");
-        alert("已複製（fallback）");
-      }
-    });
-
-    document.getElementById("reset").addEventListener("click", ()=>{
-      root.removeAttribute("style");
-      // reset inputs (simple approach: reload)
-      location.reload();
-    });
-  </script>
-</body>
-</html>
+    // ---------- presets ----------
+    const PRESETS = {
+      cleanLight: {
+        "--bg": "#F6FAFF",
+        "--bg2": "#EEF6FF",
+        "--surface": "rgba(255,255,255,0.92)",
+        "--surface2": "rgba(255,255,255,0.78)",
+        "--text": "#0B1220",
+        "--muted": "rgba(11,18,32,0.72)",
+        "--border": "rgba(15,23,42,0.10)",
+        "--shadow": "rgba(15,23,42,0.08)",
+        "--tintC": "rgba(59,130,246,0.12)",
+        "--tintD": "rgba(245,158,11,0.12)",
+        "--chip-bg": "rgba(255,255,255,0.80)",
+        "--chip-border": "rgba(15,23,42,0.10)",
+        "--btn-bg": "rgba(255,255,255,0.86)",
+        "--btn-border": "rgba(15,23,42,0.14)"
+      },
+      glassLight: {
+        "--surface": "rgba(255,255,255,0.84)",
+        "--surface2": "rgba(255,255,255,0.70)",
+        "--blur": "14px",
+        "--border": "rgba(15,23,42,0.12)",
+        "--shadow": "rgba(15,23
