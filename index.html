@@ -277,6 +277,14 @@ button, select, textarea, input,
       gap: 8px;
       flex-wrap: wrap;
     }
+/* FIX: 防止瀏覽器/系統「強制深色模式」改到表單元件，造成白字白底 */
+:root{ color-scheme: light; }
+
+button, select, textarea, input,
+.btn, .select{
+  color: var(--text);
+  -webkit-text-fill-color: var(--text); /* Android/Chrome 保險 */
+}
 
 
   </style>
@@ -792,6 +800,7 @@ button, select, textarea, input,
         "--blur": "14px",
         "--border": "rgba(15,23,42,0.12)",
         "--shadow": "rgba(15,23
+
 
 
 
