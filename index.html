@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Theme Token Editor (Single HTML)</title>
+  <style>
+    :root{
+      /* ==== TOKENS (你未來只改這裡) ==== */
+      --bg: #F6FAFF;
+      --bg2: #EEF6FF;
+
+      --surface: rgba(255,255,255,.86);
+      --surface2: rgba(255,255,255,.72);
+
+      --text: #0B1220;
+      --muted: rgba(11,18,32,.72);
+
+      --primary: #2563EB;
+      --accent: #F59E0B;
+
+      --border: rgba(15,23,42,.12);
+      --shadow: rgba(15,23,42,.12);
+
+      --chip-bg: rgba(255,255,255,.70);
+      --chip-border: rgba(15,23,42,.10);
+
+      --btn-bg: rgba(255,255,255,.82);
+      --btn-border: rgba(15,23,42,.14);
+
+      --radius: 22px;
+      --blur: 10px;
+
+      --tintC: rgba(59,130,246,.14);  /* 淡藍 tint */
+      --tintD: rgba(245,158,11,.14);  /* 淡橘 tint */
+    }
+
+    /* ==== Layout ==== */
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, "Noto Sans TC", "PingFang TC", sans-serif;
+      background: radial-gradient(1200px 800px at 15% 0%, var(--bg) 0%, var(--bg2) 45%, #ffffff 100%);
+      color: var(--text);
+    }
+
+    .wrap{
+      display:grid;
+      grid-template-columns: 380px 1fr;
+      gap: 18px;
+      padding: 18px;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    .panel{
+      border: 1px solid var(--border);
+      background: var(--surface);
+      backdrop-filter: blur(var(--blur));
+      border-radius: var(--radius);
+      box-shadow: 0 18px 40px var(--shadow);
+      padding: 14px;
+    }
+
+    h1{ font-size: 18px; margin: 0 0 10px; }
+    .hint{ font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 12px; }
+
+    .row{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items:center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(15,23,42,.06);
+    }
+    .row:last-child{ border-bottom: none; }
+
+    label{
+      font-size: 13px;
+      display:flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .k{
+      display:flex;
+      gap: 8px;
+      align-items: baseline;
+    }
+    code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      padding: 2px 6px;
+      border: 1px solid rgba(15,23,42,.10);
+      border-radius: 999px;
+      background: rgba(255,255,255,.55);
+    }
+
+    input[type="color"]{
+      width: 44px; height: 32px;
+      padding: 0; border: none; background: transparent;
+      cursor: pointer;
+    }
+    input[type="range"]{ width: 160px; }
+
+    .actions{
+      display:flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .btn{
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      border-radius: 14px;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: .2px;
+      transition: transform .08s ease;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(37,99,235,.18), rgba(255,255,255,.75));
+      border-color: rgba(37,99,235,.28);
+    }
+
+    textarea{
+      width: 100%;
+      height: 160px;
+      resize: vertical;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 10px;
+      box-sizing: border-box;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      background: rgba(255,255,255,.78);
+      color: var(--text);
+      margin-top: 10px;
+    }
+
+    /* ==== Preview ==== */
+    .preview{
+      display:flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .hero{
+      border: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(255,255,255,.75), rgba(255,255,255,.55));
+      backdrop-filter: blur(var(--blur));
+      border-radius: calc(var(--radius) + 6px);
+      box-shadow: 0 18px 40px var(--shadow);
+      padding: 20px;
+    }
+    .hero h2{ margin:0; font-size: 40px; letter-spacing: -.5px; }
+    .hero p{ margin: 10px 0 0; color: var(--muted); max-width: 760px; line-height: 1.7; }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--chip-border);
+      background: var(--chip-bg);
+      color: var(--muted);
+      margin-top: 10px;
+      width: fit-content;
+    }
+    .dot{
+      width: 10px; height: 10px; border-radius: 99px;
+      background: var(--primary);
+      box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .card{
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) + 6px);
+      background: var(--surface);
+      backdrop-filter: blur(var(--blur));
+      box-shadow: 0 18px 40px var(--shadow);
+      padding: 18px;
+      min-height: 160px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card small{ color: var(--muted); }
+    .card h3{ margin: 10px 0 6px; font-size: 20px; }
+    .card p{ margin: 0; color: var(--muted); line-height: 1.7; }
+
+    .card.theme-c::before,
+    .card.theme-d::before{
+      content:"";
+      position:absolute;
+      inset:-1px;
+      background: radial-gradient(600px 240px at 18% 18%, var(--tintC), rgba(255,255,255,0) 60%);
+      opacity: 1;
+      pointer-events:none;
+    }
+    .card.theme-d::before{
+      background: radial-gradient(600px 240px at 18% 18%, var(--tintD), rgba(255,255,255,0) 60%);
+    }
+
+    .card > *{ position: relative; z-index: 1; }
+
+    .btnRow{
+      display:flex; gap: 10px; margin-top: 12px;
+    }
+    .cta{
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--text);
+      text-decoration:none;
+      font-weight: 650;
+    }
+    .cta strong{ color: var(--primary); }
+    .cta.alt strong{ color: var(--accent); }
+
+    .teach{
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+    .teach b{ color: var(--text); }
+    .teach ul{ margin: 8px 0 0 18px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- Left: Controls -->
+    <section class="panel">
+      <h1>Theme / 顏色 Token 編輯器（單檔）</h1>
+      <div class="hint">
+        目標：加快調色。<br>
+        原則：專案所有顏色都用 <b>CSS 變數</b>，這裡調完按 <b>Copy CSS</b>，貼回你的 <code>:root</code> 或 <code>html[data-theme="light"]</code>。
+      </div>
+
+      <div class="row">
+        <label>
+          <div class="k"><b>背景 1</b> <code>--bg</code></div>
+        </label>
+        <input type="color" data-var="--bg" value="#F6FAFF">
+      </div>
+
+      <div class="row">
+        <label>
+          <div class="k"><b>背景 2</b> <code>--bg2</code></div>
+        </label>
+        <input type="color" data-var="--bg2" value="#EEF6FF">
+      </div>
+
+      <div class="row">
+        <label>
+          <div class="k"><b>文字</b> <code>--text</code></div>
+        </label>
+        <input type="color" data-var="--text" value="#0B1220">
+      </div>
+
+      <div class="row">
+        <label>
+          <div class="k"><b>次要文字</b> <code>--muted</code></div>
+          <div style="display:flex; gap:10px; align-items:center; margin-top:4px">
+            <input type="color" id="mutedBase" value="#0B1220" title="muted base">
+            <input type="range" id="mutedAlpha" min="0" max="1" step="0.01" value="0.72">
+            <span id="mutedLabel" style="font-size:12px;">0.72</span>
+          </div>
+        </label>
+        <button class="btn" id="applyMuted">套用</button>
+      </div>
+
+      <div class="row">
+        <label>
+          <div class="k"><b>主色</b> <code>--primary</code></div>
+        </label>
+        <input type="color" data-var="--primary" value="#2563EB">
+      </div>
+
+      <div class="row">
+        <label>
+          <div class="k"><b>輔色</b> <code>--accent</code></div>
+        </label>
+        <input type="color" data-var="--accent" value="#F59E0B">
+      </div>
+
+      <div class="row">
+        <label>
+          <div class="k"><b>邊框</b> <code>--border</code></div>
+          <div style="display:flex; gap:10px; align-items:center; margin-top:4px">
+            <input type="color" id="borderBase" value="#0F172A">
+            <input type="range" id="borderAlpha" min="0" max="1" step="0.01" value="0.12">
+            <span id="borderLabel" style="font-size:12px;">0.12</span>
+          </div>
+        </label>
+        <button class="btn" id="applyBorder">套用</button>
+      </div>
+
+      <div class="row">
+        <label>
+          <div class="k"><b>陰影</b> <code>--shadow</code></div>
+          <div style="display:flex; gap:10px; align-items:center; margin-top:4px">
+            <input type="color" id="shadowBase" value="#0F172A">
+            <input type="range" id="shadowAlpha" min="0" max="1" step="0.01" value="0.12">
+            <span id="shadowLabel" style="font-size:12px;">0.12</span>
+          </div>
+        </label>
+        <button class="btn" id="applyShadow">套用</button>
+      </div>
+
+      <div class="row">
+        <label>
+          <div class="k"><b>卡片透明度</b> <code>--surface</code></div>
+          <div style="display:flex; gap:10px; align-items:center; margin-top:4px">
+            <input type="range" id="surfaceAlpha" min="0.6" max="1" step="0.01" value="0.86">
+            <span id="surfaceLabel" style="font-size:12px;">0.86</span>
+          </div>
+        </label>
+        <button class="btn" id="applySurface">套用</button>
+      </div>
+
+      <div class="row">
+        <label>
+          <div class="k"><b>漸層 tint 強度</b> <code>--tintC/--tintD</code></div>
+          <div style="display:flex; gap:10px; align-items:center; margin-top:4px">
+            <input type="range" id="tintAlpha" min="0.04" max="0.22" step="0.01" value="0.14">
+            <span id="tintLabel" style="font-size:12px;">0.14</span>
+          </div>
+        </label>
+        <button class="btn" id="applyTint">套用</button>
+      </div>
+
+      <div class="row">
+        <label>
+          <div class="k"><b>圓角</b> <code>--radius</code></div>
+          <div style="display:flex; gap:10px; align-items:center; margin-top:4px">
+            <input type="range" id="radius" min="12" max="34" step="1" value="22">
+            <span id="radiusLabel" style="font-size:12px;">22</span>
+          </div>
+        </label>
+        <button class="btn" id="applyRadius">套用</button>
+      </div>
+
+      <div class="row">
+        <label>
+          <div class="k"><b>玻璃 blur</b> <code>--blur</code></div>
+          <div style="display:flex; gap:10px; align-items:center; margin-top:4px">
+            <input type="range" id="blur" min="0" max="18" step="1" value="10">
+            <span id="blurLabel" style="font-size:12px;">10</span>
+          </div>
+        </label>
+        <button class="btn" id="applyBlur">套用</button>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="copyCss">Copy CSS</button>
+        <button class="btn" id="reset">Reset</button>
+      </div>
+
+      <textarea id="out" spellcheck="false" readonly></textarea>
+
+      <div class="teach" style="margin-top:10px">
+        <b>教學：變數改哪裡？</b>
+        <ul>
+          <li><code>--bg/--bg2</code>：頁面大背景漸層</li>
+          <li><code>--surface</code>：卡片/面板底（淺色「髒」常是這裡太灰或透明疊太多）</li>
+          <li><code>--tintC/--tintD</code>：卡片彩色漸層的「淡色染色」強度（建議 0.08~0.16）</li>
+          <li><code>--border/--shadow</code>：邊框/陰影灰霧感（淺色髒，通常是 alpha 太高）</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Right: Live Preview -->
+    <section class="preview">
+      <div class="hero">
+        <div class="chip"><span class="dot"></span> 可操作 Demo｜用於快速 go / no-go</div>
+        <h2>Interactive Decision Prototypes</h2>
+        <p>右側是即時預覽：你調整 Token，所有元件一起變色。這樣調色才不會「改一個 class 沒改到另一個」。</p>
+        <div class="btnRow">
+          <a class="cta" href="javascript:void(0)"><strong>查看 Demo 列表</strong> →</a>
+          <a class="cta alt" href="javascript:void(0)"><strong>了解使用方式</strong> ↗</a>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card theme-c">
+          <small>C｜業務提案 / 快速決策</small>
+          <h3>Sales Proposal / Go-NoGo</h3>
+          <p>淺色髒感常見原因：彩色 tint + 透明卡片 + 灰陰影疊在一起。</p>
+          <div class="btnRow">
+            <a class="cta" href="javascript:void(0)"><strong>View Demo</strong> →</a>
+            <a class="cta alt" href="javascript:void(0)"><strong>操作說明</strong> ↗</a>
+          </div>
+        </div>
+
+        <div class="card theme-d">
+          <small>D｜產品概念 / MVP 驗證</small>
+          <h3>MVP Concept / Market Test</h3>
+          <p>做乾淨的方法：降低 <code>--border</code>/<code>--shadow</code> alpha，讓卡片更白、更清透。</p>
+          <div class="btnRow">
+            <a class="cta" href="javascript:void(0)"><strong>View Demo</strong> →</a>
+            <a class="cta alt" href="javascript:void(0)"><strong>操作說明</strong> ↗</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="teach">
+          <b>快速診斷「灰灰髒髒」：</b>
+          <ul>
+            <li>把 <code>--shadow</code> alpha 降到 0.06~0.10</li>
+            <li>把 <code>--border</code> alpha 降到 0.08~0.12</li>
+            <li>把 <code>--tintAlpha</code>（tint）降到 0.08~0.16</li>
+            <li>把 <code>--surface</code> 透明度提高到 0.88~0.94（更白）</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const root = document.documentElement;
+
+    function hexToRgb(hex){
+      const h = hex.replace("#","").trim();
+      const full = h.length === 3 ? h.split("").map(x=>x+x).join("") : h;
+      const n = parseInt(full, 16);
+      return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+    }
+    function rgbaFrom(hex, a){
+      const {r,g,b} = hexToRgb(hex);
+      return `rgba(${r},${g},${b},${Number(a).toFixed(2)})`;
+    }
+    function setVar(name, value){ root.style.setProperty(name, value); }
+
+    // direct color inputs
+    document.querySelectorAll('input[type="color"][data-var]').forEach(inp=>{
+      inp.addEventListener('input', ()=>{
+        setVar(inp.dataset.var, inp.value);
+        refreshOut();
+      });
+    });
+
+    // muted
+    const mutedAlpha = document.getElementById("mutedAlpha");
+    const mutedLabel = document.getElementById("mutedLabel");
+    mutedAlpha.addEventListener("input", ()=> mutedLabel.textContent = mutedAlpha.value);
+    document.getElementById("applyMuted").addEventListener("click", ()=>{
+      setVar("--muted", rgbaFrom(document.getElementById("mutedBase").value, mutedAlpha.value));
+      refreshOut();
+    });
+
+    // border
+    const borderAlpha = document.getElementById("borderAlpha");
+    const borderLabel = document.getElementById("borderLabel");
+    borderAlpha.addEventListener("input", ()=> borderLabel.textContent = borderAlpha.value);
+    document.getElementById("applyBorder").addEventListener("click", ()=>{
+      setVar("--border", rgbaFrom(document.getElementById("borderBase").value, borderAlpha.value));
+      refreshOut();
+    });
+
+    // shadow
+    const shadowAlpha = document.getElementById("shadowAlpha");
+    const shadowLabel = document.getElementById("shadowLabel");
+    shadowAlpha.addEventListener("input", ()=> shadowLabel.textContent = shadowAlpha.value);
+    document.getElementById("applyShadow").addEventListener("click", ()=>{
+      setVar("--shadow", rgbaFrom(document.getElementById("shadowBase").value, shadowAlpha.value));
+      refreshOut();
+    });
+
+    // surface
+    const surfaceAlpha = document.getElementById("surfaceAlpha");
+    const surfaceLabel = document.getElementById("surfaceLabel");
+    surfaceAlpha.addEventListener("input", ()=> surfaceLabel.textContent = surfaceAlpha.value);
+    document.getElementById("applySurface").addEventListener("click", ()=>{
+      setVar("--surface", `rgba(255,255,255,${Number(surfaceAlpha.value).toFixed(2)})`);
+      setVar("--surface2", `rgba(255,255,255,${Math.max(0.55, Number(surfaceAlpha.value)-0.14).toFixed(2)})`);
+      setVar("--btn-bg", `rgba(255,255,255,${Math.max(0.62, Number(surfaceAlpha.value)-0.04).toFixed(2)})`);
+      refreshOut();
+    });
+
+    // tint alpha
+    const tintAlpha = document.getElementById("tintAlpha");
+    const tintLabel = document.getElementById("tintLabel");
+    tintAlpha.addEventListener("input", ()=> tintLabel.textContent = tintAlpha.value);
+    document.getElementById("applyTint").addEventListener("click", ()=>{
+      setVar("--tintC", rgbaFrom("#3B82F6", tintAlpha.value));
+      setVar("--tintD", rgbaFrom("#F59E0B", tintAlpha.value));
+      refreshOut();
+    });
+
+    // radius
+    const radius = document.getElementById("radius");
+    const radiusLabel = document.getElementById("radiusLabel");
+    radius.addEventListener("input", ()=> radiusLabel.textContent = radius.value);
+    document.getElementById("applyRadius").addEventListener("click", ()=>{
+      setVar("--radius", `${radius.value}px`);
+      refreshOut();
+    });
+
+    // blur
+    const blur = document.getElementById("blur");
+    const blurLabel = document.getElementById("blurLabel");
+    blur.addEventListener("input", ()=> blurLabel.textContent = blur.value);
+    document.getElementById("applyBlur").addEventListener("click", ()=>{
+      setVar("--blur", `${blur.value}px`);
+      refreshOut();
+    });
+
+    // export
+    const out = document.getElementById("out");
+    function refreshOut(){
+      const styles = getComputedStyle(root);
+      const keys = ["--bg","--bg2","--surface","--surface2","--text","--muted","--primary","--accent","--border","--shadow","--chip-bg","--chip-border","--btn-bg","--btn-border","--radius","--blur","--tintC","--tintD"];
+      const lines = keys.map(k=>`  ${k}: ${styles.getPropertyValue(k).trim()};`);
+      out.value = `:root{\n${lines.join("\n")}\n}`;
+    }
+    refreshOut();
+
+    document.getElementById("copyCss").addEventListener("click", async ()=>{
+      refreshOut();
+      try{
+        await navigator.clipboard.writeText(out.value);
+        alert("已複製 CSS 到剪貼簿");
+      }catch(e){
+        out.select();
+        document.execCommand("copy");
+        alert("已複製（fallback）");
+      }
+    });
+
+    document.getElementById("reset").addEventListener("click", ()=>{
+      root.removeAttribute("style");
+      // reset inputs (simple approach: reload)
+      location.reload();
+    });
+  </script>
+</body>
+</html>
