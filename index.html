@@ -6,6 +6,15 @@
   <meta name="color-scheme" content="light dark" />
   <title>Theme Token Editor (Single HTML) — v2</title>
   <style>
+    /* 工具防呆：避免瀏覽器/系統強制深色模式改到表單文字顏色 */
+:root{ color-scheme: light; }
+
+button, select, textarea, input,
+.btn, .select{
+  color: var(--text);
+  -webkit-text-fill-color: var(--text);
+}
+
     :root{
       /* ==== TOKENS (你未來只改這裡) ==== */
       --bg: #F6FAFF;
@@ -790,4 +799,5 @@ button, select, textarea, input,
         "--blur": "14px",
         "--border": "rgba(15,23,42,0.12)",
         "--shadow": "rgba(15,23
+
 
