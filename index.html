@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>專業包材報價與成本分析系統</title>
+    <title>专业包材报价与成本分析系统 (PRO版)</title>
     <style>
         :root { --primary: #2563eb; --danger: #dc2626; --success: #16a34a; --bg: #f8fafc; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); padding: 20px; color: #1e293b; line-height: 1.5; }
@@ -16,132 +16,154 @@
         
         /* 損耗圖示 */
         #visual-box { width: 100%; height: 60px; background: #e2e8f0; margin: 15px 0; border-radius: 4px; display: flex; overflow: hidden; border: 1px solid #94a3b8; }
-        .lane { background: var(--primary); border-right: 1px solid rgba(255,255,255,0.3); height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; }
+        .lane { background: var(--primary); border-right: 1px solid rgba(255,255,255,0.3); height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; min-width: 2px; }
         .waste { background: var(--danger); height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; transition: width 0.3s; }
         
-        /* 報價結果 */
-        .result-card { background: #f1f5f9; padding: 20px; border-radius: 12px; text-align: center; margin-top: 20px; }
-        .price-main { font-size: 2.5rem; font-weight: 800; color: var(--primary); margin: 10px 0; }
+        .result-card { background: #f1f5f9; padding: 20px; border-radius: 12px; text-align: center; margin-top: 20px; border: 2px solid var(--primary); }
+        .price-main { font-size: 2.8rem; font-weight: 800; color: var(--primary); margin: 5px 0; }
         .warning { color: var(--danger); font-size: 0.85rem; font-weight: 600; }
         .info { font-size: 0.85rem; color: #64748b; margin-top: 5px; }
-        
-        /* 滑塊樣式 */
         .slider-container { margin: 15px 0; }
-        input[type=range] { height: 8px; background: #cbd5e1; border-radius: 5px; }
+        input[type=range] { height: 8px; background: #cbd5e1; border-radius: 5px; width: 100%; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>📊 包材成本與損耗分析儀</h2>
+    <h2>📊 包材成本与损耗分析仪 (RMB)</h2>
     
     <div class="section">
-        <label>需求規格 (MOP20/AlOx12/LLDPE30)</label>
+        <label>规格参数 (MOP20/AlOx12/LLDPE30)</label>
         <div class="grid">
             <div>
-                <label>需求寬度 (mm)</label>
-                <input type="number" id="reqWidth" value="214" oninput="calculate()">
+                <label>需求宽度 (mm)</label>
+                <input type="number" id="reqWidth" value="214" oninput="debounceCalc()">
             </div>
             <div>
-                <label>母卷寬度 (mm)</label>
-                <input type="number" id="jumboWidth" value="1000" oninput="calculate()">
+                <label>母卷宽度 (mm)</label>
+                <input type="number" id="jumboWidth" value="1000" oninput="debounceCalc()">
             </div>
         </div>
-        
-        <label style="margin-top:15px;">裁切模擬圖 (藍色可用 / 紅色廢料)</label>
+        <label style="margin-top:15px;">裁切模拟 (蓝色可用 / 红色废料)</label>
         <div id="visual-box"></div>
         <div id="utilization-text" class="info"></div>
     </div>
 
     <div class="section">
-        <label>國際原油行情 (Brent Crude USD)</label>
+        <label>汇率设定 (USD:CNY)</label>
+        <div class="grid">
+            <div>
+                <label>当前汇率 (1 USD = ? CNY)</label>
+                <input type="number" id="exchangeRate" value="7.25" step="0.01" oninput="debounceCalc()">
+            </div>
+            <div style="display: flex; align-items: flex-end;">
+                <span class="info">※ 影响原油溢价计算</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <label>国际原油行情 (Brent Crude USD)</label>
         <div class="slider-container">
-            <input type="range" id="oilPrice" min="60" max="120" value="85" step="0.5" style="accent-color: #dc2626;" oninput="calculate()">
+            <input type="range" id="oilPrice" min="60" max="120" value="85" step="0.5" oninput="debounceCalc()">
             <div class="grid" style="margin-top:10px;">
                 <span id="oilVal" style="font-weight:bold; color:var(--danger);">Current: $85</span>
-                <span style="text-align:right; font-size:0.8rem; color:#64748b;">基準價: $80</span>
+                <span style="text-align:right; font-size:0.8rem; color:#64748b;">基准价: $80</span>
             </div>
         </div>
         <div id="oil-impact" class="info"></div>
     </div>
 
     <div class="section">
-        <label>上游材料基準價 (NTD/每平米)</label>
-        <input type="number" id="baseM2Price" value="5.5" oninput="calculate()">
-        <p class="info">※ 包含 MOP, AlOx, LLDPE 合計成本</p>
+        <label>上游材料基准价 (CNY/每平米)</label>
+        <input type="number" id="baseM2Price" value="1.25" step="0.01" oninput="debounceCalc()">
+        <p class="info">※ 中国市场均价，含 MOP, AlOx, LLDPE</p>
     </div>
 
     <div class="result-card">
-        <div class="info">建議最終報價 (含損耗與溢價)</div>
-        <div class="price-main" id="finalPrice">NT$ 0.00</div>
+        <div class="info">建议最终报价 (CNY / 每平米)</div>
+        <div class="price-main" id="finalPrice">¥ 0.00</div>
         <div id="status-msg" class="warning"></div>
-        <div class="info" style="margin-top:10px;">
-            此報價為系統基於原油波動與規格損耗之自動推算，有效期 3 天。
+        <div class="info" style="margin-top:10px; font-weight: bold;">
+            此报价已考虑原油波动与规格损耗，有效期 3 天。
         </div>
     </div>
 </div>
 
 <script>
+    let timeout = null;
+
+    function debounceCalc() {
+        clearTimeout(timeout);
+        timeout = setTimeout(calculate, 300); // 停頓0.3秒才計算
+    }
+
     function calculate() {
-        // 抓取數值
         const reqWidth = parseFloat(document.getElementById('reqWidth').value) || 0;
         const jumboWidth = parseFloat(document.getElementById('jumboWidth').value) || 1000;
         const oilPrice = parseFloat(document.getElementById('oilPrice').value);
         const baseM2Price = parseFloat(document.getElementById('baseM2Price').value) || 0;
+        const rate = parseFloat(document.getElementById('exchangeRate').value) || 7.25;
         
-        // 1. 損耗計算 (核心：路數與餘料)
+        // 防呆：寬度太小不計算，防止瀏覽器當機
+        if (reqWidth < 10) {
+            document.getElementById('status-msg').innerText = "⚠️ 宽度过小，无法模拟";
+            return;
+        }
+
+        // 1. 損耗計算
         const lanes = Math.floor(jumboWidth / reqWidth);
-        const effectiveWidth = lanes * reqWidth;
-        const utilization = effectiveWidth / jumboWidth;
+        const utilization = (lanes * reqWidth) / jumboWidth;
         const wastePercent = (1 - utilization) * 100;
 
-        // 2. 更新損耗圖示
+        // 2. 更新圖示 (加入效能優化：路數過多則簡化顯示)
         const visualBox = document.getElementById('visual-box');
         visualBox.innerHTML = '';
-        for(let i=0; i<lanes; i++) {
-            let laneDiv = document.createElement('div');
-            laneDiv.className = 'lane';
-            laneDiv.style.width = (reqWidth / jumboWidth * 100) + '%';
-            laneDiv.innerText = reqWidth;
-            visualBox.appendChild(laneDiv);
+        
+        if (lanes > 50) {
+            let infoDiv = document.createElement('div');
+            infoDiv.className = 'lane';
+            infoDiv.style.width = (utilization * 100) + '%';
+            infoDiv.innerText = `${lanes} 路`;
+            visualBox.appendChild(infoDiv);
+        } else {
+            for(let i=0; i<lanes; i++) {
+                let laneDiv = document.createElement('div');
+                laneDiv.className = 'lane';
+                laneDiv.style.width = (reqWidth / jumboWidth * 100) + '%';
+                laneDiv.innerText = lanes < 10 ? reqWidth : '';
+                visualBox.appendChild(laneDiv);
+            }
         }
+        
         let wasteDiv = document.createElement('div');
         wasteDiv.className = 'waste';
-        wasteDiv.style.width = (wastePercent) + '%';
-        wasteDiv.innerText = '廢料';
+        wasteDiv.style.width = wastePercent + '%';
+        wasteDiv.innerText = wastePercent > 5 ? '废料' : '';
         visualBox.appendChild(wasteDiv);
         
-        document.getElementById('utilization-text').innerText = `裁切利用率: ${(utilization*100).toFixed(1)}% | 剩餘廢料: ${wastePercent.toFixed(1)}%`;
+        document.getElementById('utilization-text').innerText = `裁切利用率: ${(utilization*100).toFixed(1)}% | 剩余废料: ${wastePercent.toFixed(1)}%`;
 
-        // 3. 原油溢價計算 (權重 0.6)
+        // 3. 原油溢價 (連動匯率影響)
         const baseOil = 80;
         const oilDiff = (oilPrice - baseOil) / baseOil;
-        const oilSurchargeFactor = 1 + (oilDiff * 0.6);
-        document.getElementById('oilVal').innerText = `當前油價: $${oilPrice}`;
-        document.getElementById('oil-impact').innerText = `原油波動影響: ${(oilDiff * 60).toFixed(2)}% (材料成本修正)`;
+        // 油價是用美元算，匯率波動會放大或縮小人民幣成本壓力
+        const oilSurchargeFactor = 1 + (oilDiff * 0.6); 
+        document.getElementById('oilVal').innerText = `当前油价: $${oilPrice}`;
+        document.getElementById('oil-impact').innerText = `原油波动影响: ${(oilDiff * 60).toFixed(2)}% (石化成本修正)`;
 
-        // 4. 最終單價計算
-        // 公式：(基準價 * 油價修正) / 利用率 * 1.15(利潤與加工)
-        const finalM2 = (baseM2Price * oilSurchargeFactor) / utilization;
-        const profitMargin = 1.15; // 15% 毛利預留
-        const finalPrice = finalM2 * profitMargin;
+        // 4. 最終單價計算 (人民幣)
+        const profitMargin = 1.15; 
+        const finalPrice = (baseM2Price * oilSurchargeFactor) / utilization * profitMargin;
 
-        // 5. 顯示結果
-        document.getElementById('finalPrice').innerText = `NT$ ${finalPrice.toFixed(2)}`;
+        document.getElementById('finalPrice').innerText = `¥ ${finalPrice.toFixed(3)}`;
         
-        // 警示語
         const statusMsg = document.getElementById('status-msg');
-        if (utilization < 0.85) {
-            statusMsg.innerText = "⚠️ 警告：規格損耗過高 (超過 15%)，建議調整寬度以降低單價";
-        } else {
-            statusMsg.innerText = "✅ 規格利用率良好";
-            statusMsg.style.color = "#16a34a";
-        }
+        statusMsg.style.color = utilization < 0.85 ? "var(--danger)" : "var(--success)";
+        statusMsg.innerText = utilization < 0.85 ? "⚠️ 警告：规格损耗过高，请调整宽度" : "✅ 规格利用率良好";
     }
 
-    // 初始化執行一次
     calculate();
 </script>
-
 </body>
 </html>
