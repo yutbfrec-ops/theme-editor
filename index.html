@@ -81,15 +81,21 @@
     </div>
 
     <div class="result-card">
-        <div class="info">建议最终报价 (CNY / 每平米)</div>
+        <div class="info" style="color: var(--danger); font-weight: bold;">⚠️ 材料採購成本底線 (Floor Price)</div>
         <div class="price-main" id="finalPrice">¥ 0.00</div>
         <div id="status-msg" class="warning"></div>
-        <div class="info" style="margin-top:10px; font-weight: bold;">
-            此报价已考虑原油波动与规格损耗，有效期 3 天。
+        
+        <div style="text-align: left; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #cbd5e1; font-size: 0.75rem; color: #64748b;">
+            <strong>免責聲明與使用說明：</strong><br>
+            1. 本工具計算結果僅供<strong>內部成本分析</strong>參考，並非最終對外報價。<br>
+            2. 數值僅包含：基礎材料費（MOP/AlOx/LLDPE）及規格裁切損耗補償。<br>
+            3. <strong>不包含：</strong>印刷版費、分切工時、包裝紙箱、物流運費及公司營業利潤。<br>
+            4. 最終交易價格請以 A 廠發出之正式蓋章報價單為準。
         </div>
     </div>
 </div>
 
+    
 <script>
     let timeout = null;
 
